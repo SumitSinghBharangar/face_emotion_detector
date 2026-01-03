@@ -7,8 +7,13 @@ plugins {
 
 android {
     namespace = "com.example.face_emotion_detector"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 33
     ndkVersion = flutter.ndkVersion
+
+    aaptOptions {
+        noCompress ('tflite')
+        noCompress ('lite')
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
