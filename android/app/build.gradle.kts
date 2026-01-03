@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.example.face_emotion_detector"
-    compileSdk = 33
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
-    aaptOptions {
-        noCompress ('tflite')
-        noCompress ('lite')
+    aaptOptions { 
+        noCompress("tflite")
+        noCompress("lite")
     }
 
     compileOptions {
@@ -46,4 +46,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("org.tensorflow:tensorflow-lite:+")
+    implementation("org.tensorflow:tensorflow-lite-gpu:+")
 }
