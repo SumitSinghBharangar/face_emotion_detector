@@ -1,13 +1,17 @@
-import 'package:camera/camera.dart';
+import 'package:face_emotion_detector/provider/emotion_provider.dart';
 import 'package:face_emotion_detector/screens/home_page.dart';
 import 'package:flutter/material.dart';
-
-List<CameraDescription>? cameras;
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  cameras = await availableCameras();
-  runApp(const MyApp());
+
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => EmotionProvider())],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
