@@ -1,5 +1,4 @@
 import 'package:camera/camera.dart';
-
 import 'package:face_emotion_detector/provider/emotion_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,8 +14,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Trigger the initialization when the page loads
-    // "listen: false" is important here because we are inside initState
     Provider.of<EmotionProvider>(context, listen: false).init();
   }
 
@@ -24,12 +21,13 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Live Emotion Detection"),
+        title: const Text("Emotion Detector"),
         centerTitle: true,
         actions: [
-          // Using Consumer to access the switchCamera function
+          // Only show camera switch if we are NOT viewing an image
           Consumer<EmotionProvider>(
             builder: (context, provider, child) {
+              if (provider.isImageMode) return const SizedBox(); // Hide button
               return IconButton(
                 onPressed: provider.switchCamera,
                 icon: const Icon(Icons.cameraswitch),
@@ -38,24 +36,29 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      // Consumer rebuilds ONLY this part when notifyListeners() is called
       body: Consumer<EmotionProvider>(
         builder: (context, provider, child) {
           return Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.7,
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  child: !provider.isInitialized
-                      ? const Center(child: CircularProgressIndicator())
-                      : AspectRatio(
-                          aspectRatio: provider.controller!.value.aspectRatio,
-                          child: CameraPreview(provider.controller!),
-                        ),
+              // --- MAIN VIEW AREA ---
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.deepPurple, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: _buildMainView(provider),
+                    ),
+                  ),
                 ),
               ),
+
+              // --- OUTPUT TEXT ---
               Text(
                 provider.output,
                 style: const TextStyle(
@@ -64,10 +67,46 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.deepPurple,
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           );
         },
       ),
+
+      // --- FLOATING ACTION BUTTON TO PICK IMAGE ---
+      floatingActionButton: Consumer<EmotionProvider>(
+        builder: (context, provider, child) {
+          if (provider.isImageMode) {
+            // If viewing an image, show "Close" button
+            return FloatingActionButton.extended(
+              onPressed: provider.clearImageMode,
+              label: const Text("Back to Live"),
+              icon: const Icon(Icons.close),
+              backgroundColor: Colors.red,
+            );
+          } else {
+            // If live, show "Gallery" button
+            return FloatingActionButton(
+              onPressed: provider.pickImageFromGallery,
+              child: const Icon(Icons.image),
+            );
+          }
+        },
+      ),
     );
+  }
+
+  // Helper Widget to switch between Camera and Image
+  Widget _buildMainView(EmotionProvider provider) {
+    if (provider.isImageMode && provider.selectedImage != null) {
+      // Show Gallery Image
+      return Image.file(provider.selectedImage!, fit: BoxFit.cover);
+    } else {
+      // Show Live Camera
+      if (!provider.isInitialized) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      return CameraPreview(provider.controller!);
+    }
   }
 }
