@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.face_emotion_detector"
+    namespace = "org.tensorflow.lite.flutter"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
